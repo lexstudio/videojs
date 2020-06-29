@@ -1,5 +1,5 @@
 //Funciones asincronas V7
-//para autoejecutar una funcion se la encierra entre paraentesisi eso es sugar syntax
+//para autoejecutar una funcion se la encierra entre paraentesis eso es sugar syntax
 ;(async function load() {
   //await
 
@@ -10,9 +10,12 @@
   }
 
   const $form = document.getElementById("form")
+  const $home = document.getElementById("home")
+
   $form.addEventListener("submit", (event) => {
     //debugger
     event.preventDefault() //quita la accion que viene por defecto del submit en este caso no recarga la pagina
+    $home.classList.add("search-active")
   })
 
   // //llamada a la api con promesas
@@ -59,9 +62,11 @@
 
   const addEventClick = ($element) => {
     $element.addEventListener("click", () => {
-      alert(`Aqui estoy`)
+      // alert(`Aqui estoy`)
+      showModal()
     })
   }
+
   const renderMovieList = (list, $container) => {
     $container.children[0].remove() //remueve el logo de cargando que en este momento es lo unico que hay en el container
     //remplazamos actionList.data.movies x list para hacerla mas dinamica y reciba cualquier lista
@@ -82,11 +87,20 @@
 
   const $featuringContainer = document.getElementById("featuring")
 
-  const $home = document.getElementById("home")
-
   const $modal = document.getElementById("modal")
   const $overlay = document.getElementById("overlay")
   const $hideModal = document.getElementById("hide-modal")
+
+  const showModal = () => {
+    $overlay.classList.add(`active`)
+    $modal.style.animation = `modalIn .8s forwards`
+  }
+
+  const hideModal = () => {
+    $overlay.classList.remove(`active`)
+    $modal.style.animation = `modalOut .8s forwards`
+  }
+  $hideModal.addEventListener("click", hideModal)
   // document.querySelector('#modal img')
   const $modalImage = $modal.querySelector("img")
   const $modalTitle = $modal.querySelector("h1")
