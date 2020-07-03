@@ -16,13 +16,17 @@
   // ).then((data) => console.log("Drama list promise", data))
   //el mismo llamado pero con async await
 
-  const dramaList = await getData(`${BASE_API}list_movies.json?genre=drama`)
+  const {
+    data: { movies: dramaList },
+  } = await getData(`${BASE_API}list_movies.json?genre=drama`)
 
-  const actionList = await getData(`${BASE_API}list_movies.json?genre=action`) //recibimos la lista de peliculas de accion del llamado a la api
+  const {
+    data: { movies: actionList },
+  } = await getData(`${BASE_API}list_movies.json?genre=action`) //recibimos la lista de peliculas de accion del llamado a la api
 
-  const animationList = await getData(
-    `${BASE_API}list_movies.json?genre=animation`
-  )
+  const {
+    data: { movies: animationList },
+  } = await getData(`${BASE_API}list_movies.json?genre=animation`)
 
   //---------------------------------------------------------------------------
   const $form = document.getElementById("form")
@@ -43,15 +47,15 @@
   const $modalDescription = $modal.querySelector("p")
 
   //----------------------------------------------------------------------------
-  const videoItemTemplate = (movie) => {
-    return `<div class="primaryPlaylistItem">
-      <div class="primaryPlaylistItem-image">
-        <img src="${movie.medium_cover_image}">
-      </div>
-      <h4 class="primaryPlaylistItem-title">
-        ${movie.title}
-      </h4>
-    </div>`
+  const videoItemTemplate = (movie, category) => {
+    return `<div class="primaryPlaylistItem" data-idi="${movie.id}" data-category="${category}">
+              <div class="primaryPlaylistItem-image">  
+                <img src="${movie.medium_cover_image}">
+              </div>
+              <h4 class="primaryPlaylistItem-title">
+                ${movie.title}
+              </h4>
+            </div>`
   }
 
   const featuringTemplate = (peli) => {
@@ -114,31 +118,57 @@
 
   const addEventClick = ($element) => {
     $element.addEventListener("click", () => {
-      // alert(`Aqui estoy`)
-      showModal()
+      showModal($element)
     })
   }
 
   //---------------------------------------------------------------
-  const renderMovieList = (list, $container) => {
+  const renderMovieList = (list, $container, category) => {
     $container.children[0].remove() //remueve el logo de cargando que en este momento es lo unico que hay en el container
     //remplazamos actionList.data.movies x list para hacerla mas dinamica y reciba cualquier lista
     list.forEach((movie) => {
-      const HTMLString = videoItemTemplate(movie)
+      const HTMLString = videoItemTemplate(movie, category)
       const movieElement = createTemplate(HTMLString) //llamamos a la funcion para agregar los templates
       $container.append(movieElement) //reemplazamos $actioncontainer x $container para hacerlo mas dinamico
       addEventClick(movieElement)
     })
   }
 
-  renderMovieList(actionList.data.movies, $actionContainer)
-  renderMovieList(dramaList.data.movies, $dramaContainer)
-  renderMovieList(animationList.data.movies, $animationContainer)
+  renderMovieList(actionList, $actionContainer, "action")
+  renderMovieList(dramaList, $dramaContainer, "drama")
+  renderMovieList(animationList, $animationContainer, "animation")
 
   //------------------------------------------------------------------
-  const showModal = () => {
+  const findById = (list, id) => {
+    return list.find((movie) => movie.id === parseInt(id, 10))
+  }
+
+  const findMovie = (id, category) => {
+    switch (category) {
+      case "action": {
+        return findById(actionList, id)
+      }
+      case "drama": {
+        return findById(dramaList, id)
+      }
+
+      default: {
+        return findById(animationList, id)
+      }
+    }
+  }
+
+  const showModal = ($element) => {
     $overlay.classList.add(`active`)
     $modal.style.animation = `modalIn .8s forwards`
+    const id = $element.dataset.idi
+    const category = $element.dataset.category
+    const data = findMovie(id, category)
+
+    //imprimiendo los datos obtenidos de la pelicula seleccionada en el modal
+    $modalTitle.textContent = data.title
+    $modalImage.setAttribute("src", data.medium_cover_image)
+    $modalDescription.textContent = data.description_full
   }
 
   const hideModal = () => {
