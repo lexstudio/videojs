@@ -4,7 +4,7 @@
   //await
 
   //--------------------------------------Llamada al API----------------------
-
+  const BASE_API = `https://yts.mx/api/v2/`
   const getData = async (url) => {
     const response = await fetch(url)
     const data = await response.json()
@@ -16,16 +16,12 @@
   // ).then((data) => console.log("Drama list promise", data))
   //el mismo llamado pero con async await
 
-  const dramaList = await getData(
-    "https://yts.mx/api/v2/list_movies.json?genre=drama"
-  )
+  const dramaList = await getData(`${BASE_API}list_movies.json?genre=drama`)
 
-  const actionList = await getData(
-    "https://yts.mx/api/v2/list_movies.json?genre=action"
-  ) //recibimos la lista de peliculas de accion del llamado a la api
+  const actionList = await getData(`${BASE_API}list_movies.json?genre=action`) //recibimos la lista de peliculas de accion del llamado a la api
 
   const animationList = await getData(
-    "https://yts.mx/api/v2/list_movies.json?genre=animation"
+    `${BASE_API}list_movies.json?genre=animation`
   )
 
   //---------------------------------------------------------------------------
@@ -58,6 +54,24 @@
     </div>`
   }
 
+  const featuringTemplate = (peli) => {
+    return `
+      <div class="featuring">
+          <div class="featuring-image">
+            <img
+              src="${peli.medium_cover_image}"
+              width="70"
+              height="100"
+              alt=""
+            />
+          </div>
+          <div class="featuring-content">
+            <p class="featuring-title">Pelicula encontrada</p>
+            <p class="featuring-album">${peli.title}</p>
+          </div>
+      </div>
+      `
+  }
   //------------------------------------------------------------------------------
   //funcion que agrega los atributos a un elemento
   const setAttributes = ($element, attributes) => {
@@ -65,7 +79,7 @@
       $element.setAttribute(attribute, attributes[attribute])
     }
   }
-  $form.addEventListener("submit", (event) => {
+  $form.addEventListener("submit", async (event) => {
     //debugger
     event.preventDefault() //quita la accion que viene por defecto del submit en este caso no recarga la pagina
     $home.classList.add("search-active")
@@ -79,6 +93,17 @@
     })
 
     $featuringContainer.append($loader)
+
+    //info para buscar la pelicula ingresada
+    const data = new FormData($form)
+    const {
+      data: { movies: pelis },
+    } = await getData(
+      `${BASE_API}list_movies.json?limit=1&query_term=${data.get("name")}`
+    )
+
+    const HTMLString = featuringTemplate(pelis[0])
+    $featuringContainer.innerHTML = HTMLString
   })
 
   const createTemplate = (HTMLString) => {
